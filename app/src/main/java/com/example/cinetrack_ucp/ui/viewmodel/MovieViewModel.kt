@@ -27,7 +27,7 @@ class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
         private set
 
     init {
-        // Begitu ViewModel dibuat, langsung ambil data
+        println("DEBUG_API_KEY: ${BuildConfig.API_KEY}")
         getPopularMovies()
     }
 
