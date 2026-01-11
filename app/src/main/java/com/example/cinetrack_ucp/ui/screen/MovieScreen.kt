@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,41 +22,68 @@ import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 @Composable
 fun MovieScreen(
     viewModel: MovieViewModel,
-    onMovieClick: (Movie) -> Unit // Fungsi untuk menangani klik film (REQ-4)
+    onMovieClick: (Movie) -> Unit,
+    onWatchlistClick: () -> Unit
 ) {
     val state = viewModel.movieUiState
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("CineTrack") }
+                title = { Text("CineTrack", style = MaterialTheme.typography.headlineSmall) },
+                actions = {
+                    IconButton(onClick = onWatchlistClick) {
+                        Icon(Icons.Default.Favorite, contentDescription = "Watchlist", tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
             )
         }
     ) { paddingValues ->
-        Box(
+        // Gunakan Column untuk memisahkan Search Bar dan List Film
+        Column(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
+                .padding(paddingValues) // Memberi jarak agar tidak tertutup TopAppBar
         ) {
-            when (state) {
-                is MovieUIState.Loading -> {
-                    // Menampilkan indikator loading (REQ-7)
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                is MovieUIState.Success -> {
-                    // Menampilkan grid poster film populer (REQ-1)
-                    MovieGrid(
-                        movies = state.movies,
-                        onMovieClick = onMovieClick
-                    )
-                }
-                is MovieUIState.Error -> {
-                    // Menampilkan pesan error jika gagal (REQ-13)
-                    Text(
-                        text = state.message,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+            // 1. Search Bar (REQ-2)
+            OutlinedTextField(
+                value = viewModel.searchQuery,
+                onValueChange = {
+                    viewModel.onSearchQueryChange(it)
+                    viewModel.searchMovies(it)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Cari judul film...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                shape = MaterialTheme.shapes.medium,
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+
+            // Beri sedikit jarak antara Search Bar dan Grid
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 2. Area Konten (Grid Film)
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (state) {
+                    is MovieUIState.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    is MovieUIState.Success -> {
+                        MovieGrid(movies = state.movies, onMovieClick = onMovieClick)
+                    }
+                    is MovieUIState.Error -> {
+                        Text(
+                            text = state.message,
+                            modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }

@@ -15,6 +15,13 @@ interface TmdbApiService {
         @Query("page") page: Int = 1
     ): Response<MovieResponse>
 
-    // Nanti kalau mau fitur Search, tambahkan di bawah sini:
-    // @GET("search/movie") ...
+    // Tambahkan fungsi ini di dalam interface TmdbApiService
+    @GET("search/movie")
+    suspend fun searchMovies(
+        @Query("api_key") apiKey: String,
+        @Query("query") query: String, // Kata kunci dari user
+        @Query("language") language: String = "en-US",
+        @Query("page") page: Int = 1
+    ): Response<MovieResponse>
+
 }

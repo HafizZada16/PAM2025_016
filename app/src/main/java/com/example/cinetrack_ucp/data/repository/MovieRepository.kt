@@ -15,6 +15,10 @@ class MovieRepository(
     suspend fun getPopularMovies(apiKey: String): Response<MovieResponse> {
         return apiService.getPopularMovies(apiKey)
     }
+    // Di dalam class MovieRepository
+    suspend fun searchMovies(apiKey: String, query: String): Response<MovieResponse> {
+        return apiService.searchMovies(apiKey, query)
+    }
 
     // Fungsi Room (Local)
     fun getAllFavorites(): Flow<List<MovieEntity>> = movieDao.getAllFavorites()

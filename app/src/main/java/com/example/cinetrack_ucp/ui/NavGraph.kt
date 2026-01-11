@@ -14,47 +14,56 @@ import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 
 @Composable
 fun CineTrackNavGraph(viewModel: MovieViewModel) {
-    // NavController adalah pengontrol navigasi utama
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = "home" // Halaman pertama yang dibuka
+        startDestination = "home"
     ) {
-        // 1. Route Halaman Utama (Daftar Film)
+        // 1. Halaman Home
         composable("home") {
             MovieScreen(
                 viewModel = viewModel,
                 onMovieClick = { movie ->
+                    // Pastikan movie.id adalah Int
                     navController.navigate("detail/${movie.id}")
+                },
+                onWatchlistClick = {
+                    navController.navigate("watchlist")
                 }
             )
         }
 
-        // 2. Route Halaman Detail (Menerima parameter movieId)
+        // 2. Halaman Detail (Menerima Argumen ID)
         composable(
             route = "detail/{movieId}",
-            arguments = listOf(navArgument("movieId") { type = NavType.IntType })
+            arguments = listOf(
+                navArgument("movieId") { type = NavType.IntType }
+            )
         ) { backStackEntry ->
+            // Mengambil ID dari argumen navigasi
             val movieId = backStackEntry.arguments?.getInt("movieId")
 
-            // Mencari data film yang diklik dari state ViewModel
+            // Mencari data film dari State Success di ViewModel
             val movie = (viewModel.movieUiState as? MovieUIState.Success)
                 ?.movies?.find { it.id == movieId }
 
-            if (movie != null) {
+            movie?.let {
                 DetailScreen(
-                    movie = movie,
+                    movie = it,
                     viewModel = viewModel,
-                    onBack = { navController.popBackStack() } // Fungsi tombol kembali
+                    onBack = { navController.popBackStack() }
                 )
             }
         }
 
+        // 3. Halaman Watchlist
         composable("watchlist") {
             WatchlistScreen(
                 viewModel = viewModel,
-                onMovieClick = { id -> navController.navigate("detail/$id") },
+                onMovieClick = { id ->
+                    navController.navigate("detail/$id")
+                },
                 onBack = { navController.popBackStack() }
             )
         }

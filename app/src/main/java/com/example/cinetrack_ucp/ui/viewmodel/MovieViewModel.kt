@@ -18,6 +18,9 @@ import java.io.IOException
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 
 class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
 
@@ -38,18 +41,24 @@ class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
 
     // Fungsi untuk mengambil semua data favorit (Watchlist)
 // Mengonversi MovieEntity kembali ke Movie model untuk ditampilkan di UI
-    val favoriteMovies: Flow<List<Movie>> = repository.getAllFavorites().map { entities ->
-        entities.map { entity ->
-            Movie(
-                id = entity.movie_id,
-                title = entity.title,
-                overview = entity.overview,
-                posterPath = entity.poster_path,
-                voteAverage = entity.rating,
-                releaseDate = entity.release_date
-            )
+    val favoriteMovies: StateFlow<List<Movie>> = repository.getAllFavorites()
+        .map { entities ->
+            entities.map { entity ->
+                Movie(
+                    id = entity.movie_id,
+                    title = entity.title,
+                    overview = entity.overview,
+                    posterPath = entity.poster_path,
+                    voteAverage = entity.rating,
+                    releaseDate = entity.release_date
+                )
+            }
         }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     fun getPopularMovies() {
         viewModelScope.launch {
@@ -100,6 +109,36 @@ class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
             } else {
                 repository.insertFavorite(entity)
                 // Tampilkan Toast "Disimpan" sesuai flowchart [cite: 459]
+            }
+        }
+    }
+
+    // State untuk menyimpan teks pencarian di UI
+    var searchQuery by mutableStateOf("")
+        private set
+
+    fun onSearchQueryChange(newQuery: String) {
+        searchQuery = newQuery
+    }
+
+    fun searchMovies(query: String) {
+        if (query.isEmpty()) {
+            getPopularMovies() // Jika kosong, balikkan ke daftar populer
+            return
+        }
+
+        viewModelScope.launch {
+            movieUiState = MovieUIState.Loading
+            try {
+                val response = repository.searchMovies(com.example.cinetrack_ucp.BuildConfig.API_KEY, query)
+                if (response.isSuccessful) {
+                    val movies = response.body()?.results ?: emptyList()
+                    movieUiState = MovieUIState.Success(movies)
+                } else {
+                    movieUiState = MovieUIState.Error("Pencarian gagal")
+                }
+            } catch (e: Exception) {
+                movieUiState = MovieUIState.Error("Terjadi kesalahan: ${e.message}")
             }
         }
     }
