@@ -10,8 +10,8 @@ import com.example.cinetrack_ucp.ui.theme.Cinetrack_ucpTheme
 
 class MainActivity : ComponentActivity() {
 
-    // CARA BENAR: Inisialisasi instance ViewModel
-    private val mViewModel: MovieViewModel by viewModels()
+    // Tambahkan parameter factory di sini
+    private val mViewModel: MovieViewModel by viewModels { MovieViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
