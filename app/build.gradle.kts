@@ -81,4 +81,6 @@ dependencies {
 
     // 6. Coil (Library Gambar Khusus Compose - Pengganti Glide)
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    implementation("androidx.compose.material:material-icons-extended:1.6.1")
 }
