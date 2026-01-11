@@ -16,7 +16,8 @@ import com.example.cinetrack_ucp.model.Movie
 import kotlinx.coroutines.launch
 import java.io.IOException
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
 
@@ -28,6 +29,26 @@ class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
     init {
         // Begitu ViewModel dibuat, langsung ambil data
         getPopularMovies()
+    }
+
+    // Di dalam class MovieViewModel
+    suspend fun isFavorite(movieId: Int): Boolean {
+        return repository.isFavorite(movieId)
+    }
+
+    // Fungsi untuk mengambil semua data favorit (Watchlist)
+// Mengonversi MovieEntity kembali ke Movie model untuk ditampilkan di UI
+    val favoriteMovies: Flow<List<Movie>> = repository.getAllFavorites().map { entities ->
+        entities.map { entity ->
+            Movie(
+                id = entity.movie_id,
+                title = entity.title,
+                overview = entity.overview,
+                posterPath = entity.poster_path,
+                voteAverage = entity.rating,
+                releaseDate = entity.release_date
+            )
+        }
     }
 
     fun getPopularMovies() {
