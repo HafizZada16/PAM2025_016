@@ -17,24 +17,38 @@ import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovieScreen(viewModel: MovieViewModel) {
-    // Mengamati perubahan state dari ViewModel
+fun MovieScreen(
+    viewModel: MovieViewModel,
+    onMovieClick: (Movie) -> Unit // Fungsi untuk menangani klik film (REQ-4)
+) {
     val state = viewModel.movieUiState
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(title = { Text("CineTrack") })
+            CenterAlignedTopAppBar(
+                title = { Text("CineTrack") }
+            )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
             when (state) {
                 is MovieUIState.Loading -> {
+                    // Menampilkan indikator loading (REQ-7)
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is MovieUIState.Success -> {
-                    MovieGrid(movies = state.movies)
+                    // Menampilkan grid poster film populer (REQ-1)
+                    MovieGrid(
+                        movies = state.movies,
+                        onMovieClick = onMovieClick
+                    )
                 }
                 is MovieUIState.Error -> {
+                    // Menampilkan pesan error jika gagal (REQ-13)
                     Text(
                         text = state.message,
                         color = MaterialTheme.colorScheme.error,
@@ -47,23 +61,34 @@ fun MovieScreen(viewModel: MovieViewModel) {
 }
 
 @Composable
-fun MovieGrid(movies: List<Movie>) {
+fun MovieGrid(
+    movies: List<Movie>,
+    onMovieClick: (Movie) -> Unit
+) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // 2 Kolom seperti di mockup [cite: 462]
+        columns = GridCells.Fixed(2), // 2 Kolom sesuai mockup SRS [cite: 462]
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(movies) { movie ->
-            MovieItem(movie = movie)
+            MovieItem(
+                movie = movie,
+                onClick = { onMovieClick(movie) } // Mengirim data film saat diklik
+            )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovieItem(movie: Movie) {
+fun MovieItem(
+    movie: Movie,
+    onClick: () -> Unit
+) {
     Card(
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(4.dp),
+        onClick = onClick // Membuat seluruh area card bisa diklik
     ) {
         Column {
             AsyncImage(
