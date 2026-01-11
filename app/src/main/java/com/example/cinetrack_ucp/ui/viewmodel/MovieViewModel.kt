@@ -4,16 +4,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cinetrack_ucp.BuildConfig
+import com.example.cinetrack_ucp.CineTrackApp
+import com.example.cinetrack_ucp.data.local.MovieEntity
 import com.example.cinetrack_ucp.data.repository.MovieRepository
+import com.example.cinetrack_ucp.model.Movie
 import kotlinx.coroutines.launch
 import java.io.IOException
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 
-class MovieViewModel : ViewModel() {
 
-    // Repository (Sumber Data)
-    private val repository = MovieRepository()
+class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
 
     // State (Kondisi UI saat ini)
     // Awal buka aplikasi, statusnya "Loading"
@@ -51,6 +56,39 @@ class MovieViewModel : ViewModel() {
             } catch (e: Exception) {
                 // 6. Error lain-lain
                 movieUiState = MovieUIState.Error("Terjadi kesalahan: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    // Tambahkan fungsi ini di dalam class MovieViewModel
+    fun toggleFavorite(movie: Movie) {
+        viewModelScope.launch {
+            val entity = MovieEntity(
+                movie_id = movie.id,
+                title = movie.title,
+                poster_path = movie.posterPath,
+                overview = movie.overview,
+                rating = movie.voteAverage,
+                release_date = movie.releaseDate,
+                genre = "" // Bisa ditambahkan jika data genre tersedia
+            )
+
+            if (repository.isFavorite(movie.id)) {
+                repository.deleteFavorite(entity)
+                // Tampilkan Toast "Dihapus" sesuai flowchart [cite: 459]
+            } else {
+                repository.insertFavorite(entity)
+                // Tampilkan Toast "Disimpan" sesuai flowchart [cite: 459]
+            }
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                // Mengambil instance repository dari class Application (CineTrackApp)
+                val application = (this[APPLICATION_KEY] as CineTrackApp)
+                MovieViewModel(application.repository)
             }
         }
     }
