@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cinetrack_ucp.ui.screen.DetailScreen
 import com.example.cinetrack_ucp.ui.screen.MovieScreen
+import com.example.cinetrack_ucp.ui.screen.WatchlistScreen
 import com.example.cinetrack_ucp.ui.viewmodel.MovieUIState
 import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 
@@ -48,6 +49,14 @@ fun CineTrackNavGraph(viewModel: MovieViewModel) {
                     onBack = { navController.popBackStack() } // Fungsi tombol kembali
                 )
             }
+        }
+
+        composable("watchlist") {
+            WatchlistScreen(
+                viewModel = viewModel,
+                onMovieClick = { id -> navController.navigate("detail/$id") },
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
