@@ -7,7 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cinetrack_ucp.ui.screen.DetailScreen
+import com.example.cinetrack_ucp.ui.screen.LoginScreen
 import com.example.cinetrack_ucp.ui.screen.MovieScreen
+import com.example.cinetrack_ucp.ui.screen.RegisterScreen
 import com.example.cinetrack_ucp.ui.screen.WatchlistScreen
 import com.example.cinetrack_ucp.ui.viewmodel.MovieUIState
 import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
@@ -16,21 +18,34 @@ import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 fun CineTrackNavGraph(viewModel: MovieViewModel) {
     val navController = rememberNavController()
 
-    NavHost(
-        navController = navController,
-        startDestination = "home"
-    ) {
-        // 1. Halaman Home
+    val startDest = if (viewModel.isLoggedIn()) "home" else "login"
+    NavHost(navController = navController, startDestination = startDest) {
+        composable("login") {
+            LoginScreen(
+                viewModel = viewModel,
+                onLoginSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true } // Hapus login dari backstack
+                    }
+                },
+                onNavigateToRegister = { navController.navigate("register") }
+            )
+        }
+
+        composable("register") {
+            RegisterScreen(
+                viewModel = viewModel,
+                onRegisterSuccess = { navController.popBackStack() }, // Balik ke login
+                onBackToLogin = { navController.popBackStack() }
+            )
+        }
+
         composable("home") {
             MovieScreen(
                 viewModel = viewModel,
-                onMovieClick = { movie ->
-                    // Pastikan movie.id adalah Int
-                    navController.navigate("detail/${movie.id}")
-                },
-                onWatchlistClick = {
-                    navController.navigate("watchlist")
-                }
+                navController = navController,
+                onMovieClick = { movie -> navController.navigate("detail/${movie.id}") },
+                onWatchlistClick = { navController.navigate("watchlist") }
             )
         }
 

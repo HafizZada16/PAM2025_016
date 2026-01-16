@@ -13,8 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.cinetrack_ucp.model.Movie
+import com.example.cinetrack_ucp.ui.components.CineTrackTopBar
 import com.example.cinetrack_ucp.ui.viewmodel.MovieUIState
 import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 
@@ -22,6 +24,7 @@ import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 @Composable
 fun MovieScreen(
     viewModel: MovieViewModel,
+    navController: NavController,
     onMovieClick: (Movie) -> Unit,
     onWatchlistClick: () -> Unit
 ) {
@@ -29,11 +32,14 @@ fun MovieScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("CineTrack", style = MaterialTheme.typography.headlineSmall) },
-                actions = {
-                    IconButton(onClick = onWatchlistClick) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Watchlist", tint = MaterialTheme.colorScheme.primary)
+            CineTrackTopBar(
+                title = "CineTrack",
+                viewModel = viewModel,
+                onWatchlistClick = onWatchlistClick,
+                onLogoutSuccess = {
+                    // Navigasi balik ke login dan bersihkan history
+                    navController.navigate("login") {
+                        popUpTo(0)
                     }
                 }
             )

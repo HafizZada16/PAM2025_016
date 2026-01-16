@@ -16,4 +16,15 @@ object RetrofitClient {
 
         retrofit.create(TmdbApiService::class.java)
     }
+
+    // Di dalam object RetrofitClient, tambahkan ini:
+    private const val BASE_URL_BACKEND = "http://10.0.2.2:3000/" // IP khusus emulator ke localhost
+
+    val authService: AuthApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_BACKEND)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(AuthApiService::class.java)
+    }
 }

@@ -1,8 +1,11 @@
 package com.example.cinetrack_ucp.ui.viewmodel
 
+import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -16,14 +19,17 @@ import com.example.cinetrack_ucp.model.Movie
 import kotlinx.coroutines.launch
 import java.io.IOException
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import com.example.cinetrack_ucp.data.api.RetrofitClient
+import com.example.cinetrack_ucp.model.AuthRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
-class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
+class MovieViewModel(application: Application, private val repository: MovieRepository) : AndroidViewModel(application) {
 
+    private val sharedPref = application.getSharedPreferences("CineTrackPrefs", Context.MODE_PRIVATE)
     // State (Kondisi UI saat ini)
     // Awal buka aplikasi, statusnya "Loading"
     var movieUiState: MovieUIState by mutableStateOf(MovieUIState.Loading)
@@ -37,6 +43,55 @@ class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
     // Di dalam class MovieViewModel
     suspend fun isFavorite(movieId: Int): Boolean {
         return repository.isFavorite(movieId)
+    }
+
+    // --- FUNGSI LOGIN ---
+    fun login(username: String, password: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.authService.login(AuthRequest(username, password))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    // Simpan status login jika berhasil
+                    saveSession(username)
+                    onResult(true, "Selamat datang, $username!")
+                } else {
+                    onResult(false, response.body()?.message ?: "Login Gagal")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Tidak dapat terhubung ke server. Pastikan backend jalan.")
+            }
+        }
+    }
+    // --- FUNGSI REGISTER ---
+    fun register(username: String, password: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.authService.register(AuthRequest(username, password))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    onResult(true, "Akun berhasil dibuat, silakan login.")
+                } else {
+                    onResult(false, response.body()?.message ?: "Registrasi Gagal")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Kesalahan jaringan.")
+            }
+        }
+    }
+
+    // --- SESSION HELPERS ---
+    private fun saveSession(username: String) {
+        sharedPref.edit().apply {
+            putString("USERNAME", username)
+            putBoolean("IS_LOGGED_IN", true)
+            apply()
+        }
+    }
+
+    fun isLoggedIn(): Boolean = sharedPref.getBoolean("IS_LOGGED_IN", false)
+
+    fun logout(onNavigate: () -> Unit) {
+        sharedPref.edit().clear().apply()
+        onNavigate()
     }
 
     // Fungsi untuk mengambil semua data favorit (Watchlist)
@@ -146,10 +201,17 @@ class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                // Mengambil instance repository dari class Application (CineTrackApp)
+                // 1. Ambil instance Application (CineTrackApp)
                 val application = (this[APPLICATION_KEY] as CineTrackApp)
-                MovieViewModel(application.repository)
+
+                // 2. Kirim DUA parameter: application DAN repository
+                MovieViewModel(
+                    application = application,
+                    repository = application.repository
+                )
             }
         }
     }
+
+
 }
