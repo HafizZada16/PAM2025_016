@@ -1,24 +1,23 @@
-# CineTrack API - Backend Service
+# CineTrack - Movie Explorer App
 
-Service backend untuk mendukung autentikasi user pada aplikasi CineTrack, dibangun menggunakan Node.js dan MySQL.
+Aplikasi Android untuk eksplorasi film menggunakan API TMDB, dilengkapi dengan fitur pencarian, watchlist lokal, dan sistem autentikasi.
 
-## 🚀 Fitur API
-* **POST /api/register**: Mendaftarkan akun user baru ke database.
-* **POST /api/login**: Validasi akun user untuk masuk ke aplikasi.
+## 🚀 Fitur Utama
+* **List & Search Movies**: Menampilkan daftar film populer dan fitur pencarian menggunakan API TMDB.
+* **Watchlist (Local DB)**: Menyimpan film favorit ke database lokal menggunakan Room Database sehingga bisa diakses secara offline.
+* **Auth System**: Fitur Login dan Register yang terhubung ke backend Node.js.
+* **Session Management**: Status login tersimpan secara otomatis menggunakan SharedPreferences.
 
 ## 🛠️ Tech Stack
-* **Runtime**: Node.js
-* **Framework**: Express.js
-* **Database**: MySQL
-* **ORM**: Sequelize
+* **Language**: Kotlin
+* **UI**: Jetpack Compose
+* **Architecture**: MVVM (Model-View-ViewModel)
+* **Local DB**: Room Database
+* **Networking**: Retrofit & GSON
+* **Image Loading**: Coil
 
-## ⚙️ Persiapan & Instalasi
-1. Buat database di MySQL dengan nama `cinetrack_pam_db`.
-2. Jalankan perintah `npm install`.
-3. Buat file `.env` di root folder dengan isi:
-   ```env
-   DB_HOST=127.0.0.1
-   DB_USER=root
-   DB_PASSWORD=
-   DB_NAME=cinetrack_pam_db
-   DB_PORT=3308
+## ⚙️ Cara Menjalankan
+1. Clone repository ini.
+2. Pastikan Backend API sudah berjalan (lihat repository API).
+3. Jika menggunakan emulator, pastikan `BASE_URL` di `RetrofitClient` mengarah ke `http://10.0.2.2:3000/`.
+4. Build dan Run aplikasi.
