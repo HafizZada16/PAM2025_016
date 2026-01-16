@@ -14,13 +14,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.cinetrack_ucp.model.Movie
 import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WatchlistScreen(
     viewModel: MovieViewModel,
-    onMovieClick: (Int) -> Unit, // Navigasi ke detail (REQ-4)
+    onMovieClick: (Movie) -> Unit, // Navigasi ke detail (REQ-4)
     onBack: () -> Unit
 ) {
     // Observasi data favorit dari Room (REQ-11, REQ-12)
@@ -58,7 +59,7 @@ fun WatchlistScreen(
                 items(favoriteMovies) { movie ->
                     MovieItem(
                         movie = movie,
-                        onClick = { onMovieClick(movie.id) }
+                        onClick = { onMovieClick(movie) }
                     )
                 }
             }

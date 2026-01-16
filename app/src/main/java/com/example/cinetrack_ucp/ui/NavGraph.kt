@@ -1,6 +1,11 @@
 package com.example.cinetrack_ucp.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +18,8 @@ import com.example.cinetrack_ucp.ui.screen.RegisterScreen
 import com.example.cinetrack_ucp.ui.screen.WatchlistScreen
 import com.example.cinetrack_ucp.ui.viewmodel.MovieUIState
 import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
+import androidx.compose.runtime.collectAsState
+
 
 @Composable
 fun CineTrackNavGraph(viewModel: MovieViewModel) {
@@ -52,16 +59,20 @@ fun CineTrackNavGraph(viewModel: MovieViewModel) {
         // 2. Halaman Detail (Menerima Argumen ID)
         composable(
             route = "detail/{movieId}",
-            arguments = listOf(
-                navArgument("movieId") { type = NavType.IntType }
-            )
+            arguments = listOf(navArgument("movieId") { type = NavType.IntType })
         ) { backStackEntry ->
-            // Mengambil ID dari argumen navigasi
-            val movieId = backStackEntry.arguments?.getInt("movieId")
+            val movieId = backStackEntry.arguments?.getInt("movieId") ?: 0
 
-            // Mencari data film dari State Success di ViewModel
-            val movie = (viewModel.movieUiState as? MovieUIState.Success)
+            // 1. Cari di daftar film Home (API)
+            val movieFromHome = (viewModel.movieUiState as? MovieUIState.Success)
                 ?.movies?.find { it.id == movieId }
+
+            // 2. Cari di daftar film Watchlist (LOKAL)
+            // TAMBAHKAN .value SETELAH favoriteMovies
+            val movieFromWatchlist = viewModel.favoriteMovies.collectAsState().value.find { it.id == movieId }
+
+            // 3. Gabungkan hasilnya (kalau di home gak ada, cari di watchlist)
+            val movie = movieFromHome ?: movieFromWatchlist
 
             movie?.let {
                 DetailScreen(
@@ -69,6 +80,11 @@ fun CineTrackNavGraph(viewModel: MovieViewModel) {
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() }
                 )
+            } ?: run {
+                // Ini muncul kalau film tidak ketemu sama sekali
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Film tidak ditemukan")
+                }
             }
         }
 
@@ -76,8 +92,8 @@ fun CineTrackNavGraph(viewModel: MovieViewModel) {
         composable("watchlist") {
             WatchlistScreen(
                 viewModel = viewModel,
-                onMovieClick = { id ->
-                    navController.navigate("detail/$id")
+                onMovieClick = { selectedMovie -> // Beri nama parameter yang jelas
+                    navController.navigate("detail/${selectedMovie.id}?fromWatchlist=true")
                 },
                 onBack = { navController.popBackStack() }
             )

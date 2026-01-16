@@ -173,7 +173,12 @@ class MovieViewModel(application: Application, private val repository: MovieRepo
         private set
 
     fun onSearchQueryChange(newQuery: String) {
-        searchQuery = newQuery
+        searchQuery = newQuery // Update teks di UI
+        if (newQuery.isEmpty()) {
+            getPopularMovies() // Jika kosong, balikkan ke daftar populer
+        } else {
+            searchMovies(newQuery) // Jika ada teks, cari ke API TMDB
+        }
     }
 
     fun searchMovies(query: String) {

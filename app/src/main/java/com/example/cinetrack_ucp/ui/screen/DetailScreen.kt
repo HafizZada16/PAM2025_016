@@ -24,7 +24,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(movie: Movie, viewModel: MovieViewModel, onBack: () -> Unit) {
+fun DetailScreen(
+    movie: Movie,
+    viewModel: MovieViewModel,
+    fromWatchlist: Boolean = false,
+    onBack: () -> Unit
+    ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     // State lokal untuk ikon favorit (REQ-10)
@@ -50,8 +55,17 @@ fun DetailScreen(movie: Movie, viewModel: MovieViewModel, onBack: () -> Unit) {
             FloatingActionButton(
                 onClick = {
                     scope.launch {
-                        viewModel.toggleFavorite(movie) // Simpan/Hapus (REQ-8, REQ-9) [cite: 419, 420, 423, 424]
+                        // Simpan status sebelum diubah
+                        val wasFavorite = isFavorite
+
+                        viewModel.toggleFavorite(movie)
                         isFavorite = !isFavorite
+
+                        // LOGIKA BARU: Jika sebelumnya favorit (berarti sekarang menghapus),
+                        // langsung panggil onBack() untuk balik ke halaman Watchlist
+                        if (fromWatchlist && wasFavorite) {
+                            onBack()
+                        }
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.primaryContainer
