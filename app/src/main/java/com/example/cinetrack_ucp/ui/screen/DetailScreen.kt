@@ -57,10 +57,19 @@ fun DetailScreen(
             },
             confirmButton = {
                 Button(onClick = {
-                    if (name.isNotEmpty() && email.isNotEmpty()) {
+                    // Logika Validasi (Nama min 3 karakter & Email mengandung @)
+                    if (name.length >= 3 && email.contains("@")) {
                         viewModel.bookTicket(movie, name, email)
                         showDialog = false
                         Toast.makeText(context, "Tiket berhasil dipesan!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // Tampilkan pesan error jika tidak valid
+                        val errorMessage = when {
+                            name.length < 3 -> "Nama minimal harus 3 karakter!"
+                            !email.contains("@") -> "Format email tidak valid (harus ada @)!"
+                            else -> "Mohon isi semua data dengan benar!"
+                        }
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 }) { Text("Pesan") }
             }
