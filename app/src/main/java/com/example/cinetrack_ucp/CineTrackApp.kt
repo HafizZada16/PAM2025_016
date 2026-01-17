@@ -18,7 +18,8 @@ class CineTrackApp : Application() {
         database = AppDatabase.getDatabase(this)
         repository = MovieRepository(
             RetrofitClient.instance, // Argumen ke-1: TmdbApiService
-            database.movieDao()      // Argumen ke-2: MovieDao
+            database.movieDao(),    // Argumen ke-2: MovieDao
+            database.bookingDao()
         )
     }
 }

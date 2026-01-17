@@ -2,10 +2,12 @@ package com.example.cinetrack_ucp.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -13,6 +15,7 @@ import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 fun CineTrackTopBar(
     title: String,
     viewModel: MovieViewModel,
+    navController: NavHostController,
     showWatchlistButton: Boolean = true,
     onWatchlistClick: () -> Unit = {},
     onLogoutSuccess: () -> Unit
@@ -29,6 +32,10 @@ fun CineTrackTopBar(
                 IconButton(onClick = onWatchlistClick) {
                     Icon(Icons.Default.Favorite, contentDescription = "Watchlist")
                 }
+            }
+
+            IconButton(onClick = { navController.navigate("booking") }) {
+                Icon(Icons.Default.ConfirmationNumber, null)
             }
 
             // Tombol Logout

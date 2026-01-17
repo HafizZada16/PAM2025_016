@@ -1,14 +1,13 @@
 package com.example.cinetrack_ucp.ui.screen
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
@@ -35,9 +34,42 @@ fun DetailScreen(
     // State lokal untuk ikon favorit (REQ-10)
     var isFavorite by remember { mutableStateOf(false) }
 
-    // Cek status favorit saat layar pertama kali dibuka [cite: 418, 425]
+    // Cek status favorit saat layar pertama kali dibuka
     LaunchedEffect(movie.id) {
         isFavorite = viewModel.isFavorite(movie.id)
+    }
+
+    // Di dalam DetailScreen
+    var showDialog by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Konfirmasi Pesanan") },
+            text = {
+                Column {
+                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nama Lengkap") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (name.isNotEmpty() && email.isNotEmpty()) {
+                        viewModel.bookTicket(movie, name, email)
+                        showDialog = false
+                        Toast.makeText(context, "Tiket berhasil dipesan!", Toast.LENGTH_SHORT).show()
+                    }
+                }) { Text("Pesan") }
+            }
+        )
+    }
+
+// Ubah tombol booking yang tadi:
+    Button(onClick = { showDialog = true }) {
+        Text("Booking Tiket Sekarang")
     }
 
     Scaffold(
@@ -60,6 +92,10 @@ fun DetailScreen(
 
                         viewModel.toggleFavorite(movie)
                         isFavorite = !isFavorite
+
+                        // Tampilkan feedback visual (Toast)
+                        val message = if (wasFavorite) "Dihapus dari Watchlist" else "Berhasil simpan ke Watchlist"
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 
                         // LOGIKA BARU: Jika sebelumnya favorit (berarti sekarang menghapus),
                         // langsung panggil onBack() untuk balik ke halaman Watchlist
@@ -116,7 +152,12 @@ fun DetailScreen(
                 ) {
                     Text("Watch Trailer")
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = { showDialog = true }) {
+                    Text("Booking Tiket Sekarang")
+                }
             }
         }
+
     }
 }

@@ -4,10 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.cinetrack_ucp.data.BookingEntity
 
-@Database(entities = [MovieEntity::class], version = 1, exportSchema = false)
+
+@Database(
+    entities = [MovieEntity::class, BookingEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun movieDao(): MovieDao
+    abstract fun bookingDao(): BookingDao
 
     companion object {
         @Volatile
@@ -19,7 +23,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context,
                     AppDatabase::class.java,
                     "cinetrack_db" // Nama database sesuai SRS
-                ).build().also { Instance = it }
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+                    .also { Instance = it }
             }
         }
     }

@@ -48,9 +48,10 @@ fun MovieScreen(
                 title = "CineTrack",
                 viewModel = viewModel,
                 onWatchlistClick = onWatchlistClick,
+                navController = navController,
                 onLogoutSuccess = {
                     navController.navigate("login") {
-                        popUpTo(0)
+                        popUpTo(0) // Membersihkan semua stack navigasi agar tidak bisa "back" ke Home
                     }
                 }
             )

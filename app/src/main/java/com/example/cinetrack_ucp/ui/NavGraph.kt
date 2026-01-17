@@ -19,6 +19,7 @@ import com.example.cinetrack_ucp.ui.screen.WatchlistScreen
 import com.example.cinetrack_ucp.ui.viewmodel.MovieUIState
 import com.example.cinetrack_ucp.ui.viewmodel.MovieViewModel
 import androidx.compose.runtime.collectAsState
+import com.example.cinetrack_ucp.ui.screen.BookingScreen
 
 
 @Composable
@@ -95,6 +96,13 @@ fun CineTrackNavGraph(viewModel: MovieViewModel) {
                 onMovieClick = { selectedMovie -> // Beri nama parameter yang jelas
                     navController.navigate("detail/${selectedMovie.id}?fromWatchlist=true")
                 },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "booking") {
+            BookingScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )
         }

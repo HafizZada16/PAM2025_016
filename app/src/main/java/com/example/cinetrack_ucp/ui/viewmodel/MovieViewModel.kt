@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -19,9 +18,9 @@ import com.example.cinetrack_ucp.model.Movie
 import kotlinx.coroutines.launch
 import java.io.IOException
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import com.example.cinetrack_ucp.data.BookingEntity
 import com.example.cinetrack_ucp.data.api.RetrofitClient
 import com.example.cinetrack_ucp.model.AuthRequest
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -200,6 +199,33 @@ class MovieViewModel(application: Application, private val repository: MovieRepo
             } catch (e: Exception) {
                 movieUiState = MovieUIState.Error("Terjadi kesalahan: ${e.message}")
             }
+        }
+    }
+
+    // Tambahkan di dalam MovieViewModel
+    val allBookings: StateFlow<List<BookingEntity>> =
+        repository.getAllBookings().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun bookTicket(movie: Movie, name: String, email: String) {
+        viewModelScope.launch {
+            val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
+            val currentTime = dateFormat.format(java.util.Date())
+
+            val newBooking = BookingEntity(
+                movieId = movie.id,
+                title = movie.title,
+                posterPath = movie.posterPath ?: "",
+                bookingTime = currentTime,
+                customerName = name,
+                customerEmail = email
+            )
+            repository.insertBooking(newBooking)
+        }
+    }
+
+    fun cancelBooking(booking: BookingEntity) {
+        viewModelScope.launch {
+            repository.deleteBooking(booking)
         }
     }
 
